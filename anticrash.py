@@ -31,7 +31,7 @@ def on_lever_click(event):
             # Detect crash attempt
             if anticrash_data[player_uuid]['levers'] > lever_threshold:
                 event.setCancelled(True)
-                notify_admins(f"&c{player.getName()} is trying to crash the server with levers!")
+                notify_admins("&c{} is trying to crash the server with levers!".format(player.getName()))
 
             # Reset lever count after 2 seconds
             reset_lever_count(player_uuid)
@@ -43,7 +43,7 @@ def reset_lever_count(player_uuid):
     ps.scheduler.runTaskLater(reset_task, lever_reset_time)
 
 # On snowball spawn event
-def on_snowball_spawn(event):
+def entity_spawn_handler(event):
     if isinstance(event.getEntity(), Snowball):
         snowball_count = len([entity for entity in event.getEntity().getNearbyEntities(50, 50, 50) if isinstance(entity, Snowball)])
         if snowball_count > snowball_threshold:
@@ -52,12 +52,9 @@ def on_snowball_spawn(event):
                     entity.remove()
             nearest_player = get_nearest_player(event.getEntity().getLocation())
             if nearest_player:
-                notify_admins(f"&c{nearest_player.getName()} is trying to crash the server with snowballs!")
+                notify_admins("&c{} is trying to crash the server with snowballs!".format(nearest_player.getName()))
             event.setCancelled(True)
-
-# On boat spawn event
-def on_boat_spawn(event):
-    if isinstance(event.getEntity(), Boat):
+    elif isinstance(event.getEntity(), Boat):
         boat_count = len([entity for entity in event.getEntity().getNearbyEntities(50, 50, 50) if isinstance(entity, Boat)])
         if boat_count > boat_threshold:
             for entity in event.getEntity().getNearbyEntities(50, 50, 50):
@@ -65,8 +62,10 @@ def on_boat_spawn(event):
                     entity.remove()
             nearest_player = get_nearest_player(event.getEntity().getLocation())
             if nearest_player:
-                notify_admins(f"&c{nearest_player.getName()} is trying to crash the server with boats or minecarts!")
+                notify_admins(
+                    "&c{} is trying to crash the server with boats or minecarts!".format(nearest_player.getName()))
             event.setCancelled(True)
+
 
 # Notify admins with permission "op"
 def notify_admins(message):
@@ -87,5 +86,4 @@ def get_nearest_player(location):
 
 # Register the event listeners
 ps.listener.registerListener(on_lever_click, PlayerInteractEvent)
-ps.listener.registerListener(on_snowball_spawn, EntitySpawnEvent)
-ps.listener.registerListener(on_boat_spawn, EntitySpawnEvent)
+ps.listener.registerListener(entity_spawn_handler, EntitySpawnEvent)
